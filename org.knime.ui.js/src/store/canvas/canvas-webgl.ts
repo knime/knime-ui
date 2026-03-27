@@ -437,7 +437,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
    */
   const screenFromCanvasCoordinates = computed(() => {
     return ({ x, y }: XY) => {
-      const kanvas = getKanvasDomElement()!;
+      const kanvas = getKanvasDomElement();
+      if (!kanvas) return { x: 0, y: 0 };
       const { x: offsetLeft, y: offsetTop } = kanvas.getBoundingClientRect();
 
       const [globalX, globalY] = fromCanvasCoordinates.value([x, y]);

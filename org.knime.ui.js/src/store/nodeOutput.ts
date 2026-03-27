@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
@@ -82,8 +82,25 @@ export const useNodeOutputStore = defineStore("nodeOutput", () => {
     });
   };
 
+  /** Second port tab shown in split view; null means split is closed */
+  const secondaryPortTab = ref<NodeOutputTabIdentifier | null>(null);
+
+  const isSplitActive = computed(() => secondaryPortTab.value !== null);
+
+  const openSplit = () => {
+    secondaryPortTab.value = activePortTab.value;
+  };
+
+  const closeSplit = () => {
+    secondaryPortTab.value = null;
+  };
+
   return {
     activePortTab,
+    secondaryPortTab,
+    isSplitActive,
+    openSplit,
+    closeSplit,
     detachActiveTabPortView,
     setActivePortTabByKeyboard,
     detachPortViewByKeyboard,

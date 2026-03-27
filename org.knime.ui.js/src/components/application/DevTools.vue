@@ -12,6 +12,7 @@ import {
 } from "@knime/kds-components";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
+import EyeIcon from "@knime/styles/img/icons/eye.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { isDesktop } from "@/environment";
@@ -231,6 +232,7 @@ const dragStart = (pointerDown: PointerEvent) => {
       >
         <option value="side-by-side">⬜ Side-by-side</option>
         <option value="bottom">⬇️ Bottom</option>
+        <option value="right">➡️ Right</option>
       </select>
 
       <select
@@ -254,6 +256,18 @@ const dragStart = (pointerDown: PointerEvent) => {
         <option value="tabs">🗂️ Tabs</option>
         <option value="disabled">🚫 Disabled</option>
       </select>
+
+      <FunctionButton
+        :disabled="isSVGRenderer"
+        class="header-button no-text control"
+        :class="{ active: appSettingsStore.inlineViewsEnabled }"
+        aria-label="Toggle inline views"
+        data-test-id="inline-views-toggle-btn"
+        :title="appSettingsStore.inlineViewsEnabled ? 'Disable inline views (show pills)' : 'Enable inline views'"
+        @click="appSettingsStore.inlineViewsEnabled = !appSettingsStore.inlineViewsEnabled"
+      >
+        <EyeIcon />
+      </FunctionButton>
 
       <FunctionButton
         :disabled="isSVGRenderer"

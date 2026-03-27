@@ -16,6 +16,7 @@ import { workflowDomain } from "@/lib/workflow-domain";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { usePanelStore } from "@/store/panel";
+import { useNodeCustomSizesStore } from "@/store/nodeCustomSizes";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { isFullFloatingConnector } from "@/store/floatingConnector/types";
@@ -58,6 +59,31 @@ const props = withDefaults(defineProps<Props>(), {
 
 const isMetanode = computed(() => workflowDomain.node.isMetaNode(props.node));
 const isComponent = computed(() => workflowDomain.node.isComponent(props.node));
+
+const customSizesStore = useNodeCustomSizesStore();
+
+// View nodes only show their inline view when fully executed and views are enabled.
+// Unexecuted view nodes render compact (same as non-view nodes) to avoid a
+// large empty card. Compact nodes are never resized regardless.
+const isExecuted = computed(
+  () => props.node.state?.executionState === "EXECUTED",
+);
+// When inline views are disabled, treat all nodes as unexecuted for card sizing
+const effectiveIsExecuted = computed(
+  () => isExecuted.value && inlineViewsEnabled.value,
+);
+const customCardHeight = computed<number | undefined>(() => {
+  if (!props.node.hasView) return undefined;
+  if (!effectiveIsExecuted.value) return $shapes.compactNodeCardHeight;
+  return customSizesStore.getSize(props.node.id)?.height ?? undefined;
+});
+const customCardWidth = computed<number | undefined>(() => {
+  if (props.node.hasView && effectiveIsExecuted.value) {
+    return customSizesStore.getSize(props.node.id)?.width ?? undefined;
+  }
+  // Compact nodes (non-view or unexecuted view): variable width based on name
+  return $shapes.compactNodeCardWidth(props.name.length);
+});
 
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
@@ -169,7 +195,7 @@ const nodeNameDimensions = computed(() => {
   return rawNodeNameDimensions.value;
 });
 
-const { useEmbeddedDialogs, nodeConfigOpenMode } = storeToRefs(useApplicationSettingsStore());
+const { useEmbeddedDialogs, nodeConfigOpenMode, inlineViewsEnabled } = storeToRefs(useApplicationSettingsStore());
 const { dockedRightPanelWidth } = storeToRefs(usePanelStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
   isHovering,
@@ -183,6 +209,8 @@ const { hoverSize, renderHoverArea } = useNodeHoverSize({
   allowedActions: props.node.allowedActions,
   isDebugModeEnabled,
   isMetanode,
+  cardHeight: customCardHeight,
+  cardWidth: customCardWidth,
 });
 
 const renderable = computed(
@@ -194,7 +222,7 @@ const nodeNamePosition = computed(() => {
   return {
     x: isMetanode.value
       ? $shapes.nodeSize / 2
-      : $shapes.nodeCardWidth / 2,
+      : (customCardWidth.value ?? $shapes.nodeCardWidth) / 2,
     // leave space between name and torso for the flowvariable ports
     y: -$shapes.webGlPortSize,
   };
@@ -299,14 +327,16 @@ const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
       ? nameEditorDimensions.value.width
       : $shapes.nodeNameHorizontalMargin * 2,
   cardHeight: () =>
-    props.node.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight,
+    customCardHeight.value ??
+    (props.node.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight),
+  cardWidth: () => customCardWidth.value,
 });
 
 const actionBarPosition = computed(() => {
   return {
     x: isMetanode.value
       ? $shapes.nodeSize / 2
-      : $shapes.nodeCardWidth / 2,
+      : (customCardWidth.value ?? $shapes.nodeCardWidth) / 2,
     y: nodeSelectionMeasures.value.y + $shapes.webGlNodeActionBarYOffset,
   };
 });
@@ -380,6 +410,8 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         :is-executing="isExecuting"
         :is-replacement-candidate="isReplacementCandidate"
         :is-hovered="isHovering && !isDraggingFloatingConnector"
+        :custom-card-height="customCardHeight"
+        :custom-card-width="customCardWidth"
         :execution-state="
           isMetanode
             ? (node.state?.executionState as MetaNodeState.ExecutionStateEnum)
@@ -393,6 +425,9 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
         v-if="!isMetanode"
         v-bind="node.state"
         :text-resolution="zoomAwareResolution"
+        :type="type"
+        :kind="node.kind"
+        :card-width="customCardWidth"
       />
     </Container>
 
@@ -403,6 +438,7 @@ const onRightClick = async (event: PIXI.FederatedPointerEvent) => {
       :out-ports="node.outPorts"
       :is-editable="isEditable"
       :ports-visible="showPorts"
+      :card-width="customCardWidth"
       :port-groups="
         workflowDomain.node.isNative(node) ? node.portGroups : undefined
       "

@@ -2,7 +2,22 @@
 export const nodeSize = 32;
 export const nodeCardWidth = 160;
 export const nodeCardHeight = 150;
-export const compactNodeCardHeight = 26;
+export const compactNodeCardHeight = 24;
+export const minCompactNodeCardWidth = 120;
+
+/**
+ * Calculates the display width of a compact node card (non-view or unexecuted view node)
+ * based on the node name length. Clamped to [minCompactNodeCardWidth, nodeCardWidth].
+ */
+export const compactNodeCardWidth = (nameLength: number): number => {
+  const nameX = 20; // left offset where name starts (CHIP_X 4 + CHIP_SIZE 12 + gap 4)
+  const charWidth = 4.5; // approximate px per character in compact font
+  const rightPad = 6;
+  return Math.max(
+    minCompactNodeCardWidth,
+    Math.min(nodeCardWidth, nameX + Math.ceil(nameLength * charWidth) + rightPad),
+  );
+};
 export const portSize = 9;
 export const webGlPortSize = 8;
 export const portActionButtonSize = 20;

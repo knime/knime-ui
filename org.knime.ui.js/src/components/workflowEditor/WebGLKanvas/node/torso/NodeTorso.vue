@@ -29,14 +29,18 @@ type Props = {
   hasView?: boolean;
   executionState?: MetaNodeState.ExecutionStateEnum;
   isHovered?: boolean;
+  customCardHeight?: number;
+  customCardWidth?: number;
 };
 
 const props = defineProps<Props>();
 
 const isMetanode = computed(() => props.kind === Node.KindEnum.Metanode);
 
-const cardH = computed(() =>
-  props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight,
+const cardH = computed(
+  () =>
+    props.customCardHeight ??
+    (props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight),
 );
 
 const shadowFilter = new BlurFilter({
@@ -46,9 +50,13 @@ const shadowFilter = new BlurFilter({
   legacy: true,
 });
 
+const cardW = computed(
+  () => props.customCardWidth ?? $shapes.nodeCardWidth,
+);
+
 const renderCardShadow = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.roundRect(0, 0, $shapes.nodeCardWidth, cardH.value, 6);
+  graphics.roundRect(0, 0, cardW.value, cardH.value, props.hasView ? 6 : 4);
   graphics.stroke({ width: 2, color: $colors.GrayDarkSemi });
 };
 
@@ -94,6 +102,8 @@ const renderMetanodeShadow = (graphics: GraphicsInst) => {
         :name="name"
         :has-view="hasView"
         :is-executing="isExecuting"
+        :custom-width="customCardWidth"
+        :custom-height="customCardHeight"
       />
     </template>
   </Container>

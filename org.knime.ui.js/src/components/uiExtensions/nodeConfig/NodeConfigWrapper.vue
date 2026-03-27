@@ -15,11 +15,13 @@ import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSettingsStore } from "@/store/settings";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { UIExtensionLoadingState } from "../common/types";
 
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
+import NodeOutput from "../NodeOutput.vue";
 import NodeConfigButtons from "./NodeConfigButtons.vue";
 import NodeConfigJumpMarks from "./NodeConfigJumpMarks.vue";
 import NodeConfigLoader from "./NodeConfigLoader.vue";
@@ -54,11 +56,51 @@ defineEmits<{
   close: [];
 }>();
 
+const nodeInteractionsStore = useNodeInteractionsStore();
+
 const nodeName = computed<string>(() =>
   activeContext.value
-    ? useNodeInteractionsStore().getNodeName(activeContext.value.node.id)
+    ? nodeInteractionsStore.getNodeName(activeContext.value.node.id)
     : "",
 );
+
+const predecessorNodeIds = computed<string[]>(() => {
+  if (!activeContext.value || !activeWorkflow.value) {
+    return [];
+  }
+  const nodeId = activeContext.value.node.id;
+  const seen = new Set<string>();
+  for (const conn of Object.values(activeWorkflow.value.connections)) {
+    if (conn.destNode === nodeId && !conn.flowVariableConnection) {
+      seen.add(conn.sourceNode);
+    }
+  }
+  return [...seen];
+});
+
+const successorNodeIds = computed<string[]>(() => {
+  if (!activeContext.value || !activeWorkflow.value) {
+    return [];
+  }
+  const nodeId = activeContext.value.node.id;
+  const seen = new Set<string>();
+  for (const conn of Object.values(activeWorkflow.value.connections)) {
+    if (conn.sourceNode === nodeId && !conn.flowVariableConnection) {
+      seen.add(conn.destNode);
+    }
+  }
+  return [...seen];
+});
+
+const navigateToConnectedNode = async (nodeId: string) => {
+  const selectionStore = useSelectionStore();
+  const { wasAborted } = await selectionStore.tryClearSelection({
+    keepNodesInSelection: [nodeId],
+  });
+  if (wasAborted) {
+    return;
+  }
+};
 
 const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
 
@@ -168,7 +210,7 @@ const discardSettings = () => {
     <div v-if="isLargeMode" class="title-bar">
       <h1 class="node-name">{{ nodeName }}</h1>
       <Button
-        v-if="activeContext && canBeEnlarged"
+        v-if="activeContext"
         on-dark
         compact
         class="minimize-btn"
@@ -180,10 +222,34 @@ const discardSettings = () => {
       </Button>
     </div>
 
+    <!-- Vertically-centered side navigation — only in large mode -->
+    <div v-if="isLargeMode && predecessorNodeIds.length > 0" class="connected-nodes connected-nodes--left">
+      <button
+        v-for="connNodeId in predecessorNodeIds"
+        :key="connNodeId"
+        class="connected-node-btn"
+        :title="nodeInteractionsStore.getNodeName(connNodeId)"
+        @click="navigateToConnectedNode(connNodeId)"
+      >
+        {{ nodeInteractionsStore.getNodeName(connNodeId) }}
+      </button>
+    </div>
+    <div v-if="isLargeMode && successorNodeIds.length > 0" class="connected-nodes connected-nodes--right">
+      <button
+        v-for="connNodeId in successorNodeIds"
+        :key="connNodeId"
+        class="connected-node-btn"
+        :title="nodeInteractionsStore.getNodeName(connNodeId)"
+        @click="navigateToConnectedNode(connNodeId)"
+      >
+        {{ nodeInteractionsStore.getNodeName(connNodeId) }}
+      </button>
+    </div>
+
       <div :class="['content', { 'large-mode': isLargeMode }]">
       <!-- Tab bar -->
       <div v-if="!isLargeMode" class="tab-bar header">
-        <span class="tab-title">Configuration</span>
+        <span class="tab-title">{{ nodeName || "Configuration" }}</span>
         <!-- Action buttons -->
         <div class="tab-actions">
           <FunctionButton
@@ -242,6 +308,13 @@ const discardSettings = () => {
 
         <template v-if="activeContext && activeContext.isEmbeddable">
           <div class="body-row">
+            <!-- NodeOutput shown alongside dialog for non-enlargeable nodes in large mode -->
+            <template v-if="isLargeMode && !canBeEnlarged">
+              <div class="port-view-section">
+                <NodeOutput />
+              </div>
+              <div class="panel-divider" />
+            </template>
             <!-- Inline jump marks — only shown in fixed side-panel (not floating) mode -->
             <NodeConfigJumpMarks
               v-if="!hasExternalJumpMarks && jumpMarksMode !== 'disabled'"
@@ -290,6 +363,7 @@ const discardSettings = () => {
 .node-configuration {
   --title-bar-height: var(--space-32);
 
+  position: relative;
   height: 100%;
 
   & .title-bar {
@@ -308,6 +382,8 @@ const discardSettings = () => {
       margin: 0;
       font-size: 18px;
       line-height: var(--title-bar-height);
+      flex: 1;
+      min-width: 0;
 
       @mixin truncate;
     }
@@ -357,11 +433,73 @@ const discardSettings = () => {
     overflow: hidden;
   }
 
+  & .port-view-section {
+    flex: 2;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  & .panel-divider {
+    width: 1px;
+    flex-shrink: 0;
+    background-color: var(--kds-color-border-default, var(--knime-silver-sand));
+  }
+
   & .description-toggle-btn,
   & .advanced-options-btn {
     &.active {
       background-color: var(--kds-color-background-neutral-active);
     }
+  }
+}
+
+.connected-nodes {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1;
+  padding: 8px 0;
+
+  &.connected-nodes--left {
+    left: 0;
+    align-items: flex-start;
+  }
+
+  &.connected-nodes--right {
+    right: 0;
+    align-items: flex-end;
+  }
+}
+
+.connected-node-btn {
+  background: var(--knime-masala);
+  border: none;
+  border-radius: 0 4px 4px 0;
+  color: var(--knime-white);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.3;
+  max-width: 120px;
+  overflow: hidden;
+  padding: 4px 8px 4px 6px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: 2px 2px 6px rgb(0 0 0 / 25%);
+
+  &:hover {
+    background: color-mix(in srgb, var(--knime-white) 15%, var(--knime-masala));
+  }
+
+  .connected-nodes--right & {
+    border-radius: 4px 0 0 4px;
+    padding: 4px 6px 4px 8px;
+    text-align: right;
   }
 }
 

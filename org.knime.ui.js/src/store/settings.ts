@@ -26,9 +26,10 @@ export interface SettingsState {
     askBeforeAutoApplyNodeConfigChanges: boolean;
     shouldShowExampleWorkflows: boolean;
     nodeConfigOpenMode: "current" | "actionbar" | "modal" | "dock";
-    nodeOutputLayout: "bottom" | "side-by-side";
+    nodeOutputLayout: "bottom" | "side-by-side" | "right";
     showDialogAdvancedOptions: boolean;
     jumpMarksMode: "scrolling" | "tabs" | "disabled";
+    kaiPlacement: "centerStage" | "rightPanel";
   };
 }
 
@@ -44,6 +45,7 @@ const defaults: SettingsState["settings"] = {
   nodeOutputLayout: "side-by-side",
   showDialogAdvancedOptions: false,
   jumpMarksMode: "scrolling",
+  kaiPlacement: "centerStage",
 };
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T | null => {

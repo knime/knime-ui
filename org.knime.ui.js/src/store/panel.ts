@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 
 import { useApplicationStore } from "@/store/application/application";
+import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 /**
@@ -89,10 +90,6 @@ export const usePanelStore = defineStore("panel", {
 
     openKaiCompact() {
       this.isKaiCompactOpen = true;
-
-      if (this.kaiPlacement === "rightPanel") {
-        this.isRightPanelExpanded = true;
-      }
     },
 
     closeKaiCompact() {
@@ -101,10 +98,7 @@ export const usePanelStore = defineStore("panel", {
 
     setKaiPlacement(placement: KaiPlacement) {
       this.kaiPlacement = placement;
-
-      if (placement === "rightPanel" && this.isKaiCompactOpen) {
-        this.isRightPanelExpanded = true;
-      }
+      useSettingsStore().updateSetting({ key: "kaiPlacement", value: placement });
     },
 
     closeExtensionPanel() {

@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
+import { Pill } from "@knime/components";
 import XCloseIcon from "@knime/styles/img/icons/close.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { usePanelStore } from "@/store/panel";
 import { useAnalytics } from "@/services/analytics";
+import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import ChatControls from "./chat/ChatControls.vue";
 import Message from "./chat/message/Message.vue";
@@ -28,6 +32,27 @@ const {
 const { usage } = storeToRefs(useAIAssistantStore());
 
 const { panelComponent } = useKaiPanels();
+
+const { getSelectedNodes, getSelectedAnnotations } = storeToRefs(useSelectionStore());
+const nodeInteractionsStore = useNodeInteractionsStore();
+
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+const CHIP_MAX_LENGTH = 24;
+const truncate = (s: string) =>
+  s.length > CHIP_MAX_LENGTH ? `${s.slice(0, CHIP_MAX_LENGTH)}…` : s;
+
+const selectionChips = computed(() => {
+  const nodeChips = getSelectedNodes.value.map((node) => ({
+    key: `node-${node.id}`,
+    label: truncate(nodeInteractionsStore.getNodeName(node.id)),
+  }));
+  const annotationChips = getSelectedAnnotations.value.map((ann) => ({
+    key: `ann-${ann.id}`,
+    label: truncate(stripHtml(ann.text.value)) || "Annotation",
+  }));
+  return [...nodeChips, ...annotationChips];
+});
 
 const onSendMessage = (...args: Parameters<typeof sendMessage>) => {
   sendMessage(...args);
@@ -61,6 +86,16 @@ const onSendMessage = (...args: Parameters<typeof sendMessage>) => {
           :references="lastAiMessage?.references"
           :is-error="lastAiMessage?.isError"
         />
+      </div>
+
+      <!-- Selection chips -->
+      <div v-if="selectionChips.length" class="selection-chips">
+        <Pill
+          v-for="chip in selectionChips"
+          :key="chip.key"
+          color="gray"
+          :title="chip.label"
+        >{{ chip.label }}</Pill>
       </div>
 
       <!-- Input field -->
@@ -110,6 +145,13 @@ const onSendMessage = (...args: Parameters<typeof sendMessage>) => {
     stroke: var(--kds-color-text-and-icon-neutral);
     stroke-width: 2px;
   }
+}
+
+.selection-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 0;
 }
 
 .last-answer {

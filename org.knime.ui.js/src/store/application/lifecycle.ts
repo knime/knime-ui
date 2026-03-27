@@ -138,6 +138,9 @@ export const useLifecycleStore = defineStore("lifecycle", {
       useApplicationSettingsStore().setJumpMarksMode(
         useSettingsStore().settings.jumpMarksMode,
       );
+      usePanelStore().setKaiPlacement(
+        useSettingsStore().settings.kaiPlacement,
+      );
       await useAISettingsStore().fetchAISettings();
       await useAISettingsStore().pruneStaleEntries();
 

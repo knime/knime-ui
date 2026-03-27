@@ -149,7 +149,9 @@ const annotations = computed(
         :node-id="node.id"
         :name="nodeInteractionStore.getNodeName(node.id)"
         :is-metanode="workflowDomain.node.isMetaNode(node)"
+        :is-component="workflowDomain.node.isComponent(node)"
         :has-view="node.hasView"
+        :is-executed="node.state?.executionState === 'EXECUTED'"
       />
     </Container>
 

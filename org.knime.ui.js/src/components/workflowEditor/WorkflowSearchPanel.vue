@@ -31,14 +31,10 @@ import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type NodeResult = { kind: "node"; node: KnimeNode };
 type AnnotationResult = { kind: "annotation"; annotation: WorkflowAnnotation };
 type FlowVarResult = { kind: "flowvar"; sourceNodeId: string };
 type SearchResult = NodeResult | AnnotationResult | FlowVarResult;
-
-// ─── Stores ───────────────────────────────────────────────────────────────────
 
 const panelStore = usePanelStore();
 const { searchFocusTrigger } = storeToRefs(panelStore);
@@ -47,23 +43,16 @@ const nodeInteractionsStore = useNodeInteractionsStore();
 const workflowMonitorStore = useWorkflowMonitorStore();
 const { currentState: monitorState } = storeToRefs(workflowMonitorStore);
 
-// ─── Search state ─────────────────────────────────────────────────────────────
-
 const query = ref("");
 const activeIndex = ref(0);
 const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const resultsRef = useTemplateRef<HTMLElement>("resultsRef");
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-/** Nodes that are the source of at least one flow variable connection */
 const flowVarSourceNodeIds = computed<Set<string>>(() => {
   if (!activeWorkflow.value) return new Set();
   const set = new Set<string>();
   Object.values(activeWorkflow.value.connections ?? {}).forEach((conn) => {
-    if (conn.flowVariableConnection) {
-      set.add(conn.sourceNode);
-    }
+    if (conn.flowVariableConnection) { set.add(conn.sourceNode); }
   });
   return set;
 });
@@ -82,47 +71,40 @@ const allResults = computed<SearchResult[]>(() => {
   return [...nodes, ...annotations, ...flowVars];
 });
 
+const nodeMatchesQuery = (result: NodeResult, q: string) => {
+  const label = result.node.annotation?.text?.value?.toLowerCase() ?? "";
+  const name = nodeInteractionsStore.getNodeName(result.node.id)?.toLowerCase() ?? "";
+  return label.includes(q) || name.includes(q) || result.node.id.toLowerCase().includes(q);
+};
+
+const annotationMatchesQuery = (result: AnnotationResult, q: string) => {
+  const text = result.annotation.text?.value?.toLowerCase() ?? "";
+  return text.includes(q) || result.annotation.id.toLowerCase().includes(q);
+};
+
+const flowVarMatchesQuery = (result: FlowVarResult, q: string) => {
+  const node = activeWorkflow.value?.nodes[result.sourceNodeId];
+  if (!node) { return false; }
+  const label = node.annotation?.text?.value?.toLowerCase() ?? "";
+  const name = nodeInteractionsStore.getNodeName(result.sourceNodeId)?.toLowerCase() ?? "";
+  return label.includes(q) || name.includes(q) || "flow variable".includes(q);
+};
+
+const matchesQuery = (result: SearchResult, q: string): boolean => {
+  if (result.kind === "node") { return nodeMatchesQuery(result, q); }
+  if (result.kind === "annotation") { return annotationMatchesQuery(result, q); }
+  return flowVarMatchesQuery(result, q);
+};
+
 const filteredResults = computed<SearchResult[]>(() => {
   const q = query.value.trim().toLowerCase();
-  if (!q) return allResults.value;
-  return allResults.value.filter((result) => {
-    if (result.kind === "node") {
-      const label = result.node.annotation?.text?.value?.toLowerCase() ?? "";
-      const name =
-        nodeInteractionsStore.getNodeName(result.node.id)?.toLowerCase() ?? "";
-      return (
-        label.includes(q) ||
-        name.includes(q) ||
-        result.node.id.toLowerCase().includes(q)
-      );
-    } else if (result.kind === "annotation") {
-      const text = result.annotation.text?.value?.toLowerCase() ?? "";
-      return (
-        text.includes(q) || result.annotation.id.toLowerCase().includes(q)
-      );
-    } else {
-      // flowvar — match by source node name/label
-      const node = activeWorkflow.value?.nodes[result.sourceNodeId];
-      if (!node) return false;
-      const label = node.annotation?.text?.value?.toLowerCase() ?? "";
-      const name =
-        nodeInteractionsStore.getNodeName(result.sourceNodeId)?.toLowerCase() ??
-        "";
-      return (
-        label.includes(q) ||
-        name.includes(q) ||
-        "flow variable".includes(q) ||
-        "flowvar".includes(q)
-      );
-    }
-  });
+  if (!q) { return allResults.value; }
+  return allResults.value.filter((result) => matchesQuery(result, q));
 });
 
 watch(filteredResults, () => {
   activeIndex.value = 0;
 });
-
-// ─── Labels ───────────────────────────────────────────────────────────────────
 
 const resultLabel = (result: SearchResult): string => {
   if (result.kind === "node") {
@@ -149,78 +131,54 @@ const resultSubLabel = (result: SearchResult): string | null => {
     const label = result.node.annotation?.text?.value;
     return name && name !== label ? name : null;
   }
-  if (result.kind === "flowvar") {
-    return "Exposes flow variables";
-  }
+  if (result.kind === "flowvar") { return "Exposes flow variables"; }
   return null;
 };
 
-// ─── Monitor state ────────────────────────────────────────────────────────────
+const nodeMonitorState = (nodeId: string) => ({
+  error: monitorState.value.errors?.find((e) => e.nodeId === nodeId) ?? null,
+  warning: monitorState.value.warnings?.find((w) => w.nodeId === nodeId) ?? null,
+});
 
-const nodeMonitorState = (nodeId: string) => {
-  const error = monitorState.value.errors?.find((e) => e.nodeId === nodeId);
-  const warning = monitorState.value.warnings?.find(
-    (w) => w.nodeId === nodeId,
-  );
-  return { error: error ?? null, warning: warning ?? null };
-};
-
-// ─── Selection ────────────────────────────────────────────────────────────────
-
-const { selectedNodeIds, selectedAnnotationIds } = storeToRefs(
-  useSelectionStore(),
-);
+const { selectedNodeIds, selectedAnnotationIds } = storeToRefs(useSelectionStore());
 
 const isResultSelected = (result: SearchResult) => {
-  if (result.kind === "node") {
-    return selectedNodeIds.value.includes(result.node.id);
-  }
-  if (result.kind === "annotation") {
-    return selectedAnnotationIds.value.includes(result.annotation.id);
-  }
+  if (result.kind === "node") { return selectedNodeIds.value.includes(result.node.id); }
+  if (result.kind === "annotation") { return selectedAnnotationIds.value.includes(result.annotation.id); }
   return selectedNodeIds.value.includes(result.sourceNodeId);
 };
-
-// ─── Navigation ───────────────────────────────────────────────────────────────
 
 const navigateTo = async (result: SearchResult) => {
   const selectionStore = useSelectionStore();
   const canvasStore = useCurrentCanvasStore();
-
   const nodeId =
     result.kind === "node"
       ? result.node.id
       : result.kind === "flowvar"
         ? result.sourceNodeId
         : null;
-
   if (nodeId) {
     const node = activeWorkflow.value?.nodes[nodeId];
-    if (!node) return;
-    const { wasAborted } = await selectionStore.tryClearSelection({
-      keepNodesInSelection: [nodeId],
-    });
-    if (wasAborted) return;
-    canvasStore.value.moveObjectIntoView(nodeToWorkflowObject(node));
+    if (!node) { return; }
+    const { wasAborted } = await selectionStore.tryClearSelection({ keepNodesInSelection: [nodeId] });
+    if (wasAborted) { return; }
+    await nextTick();
+    canvasStore.value.moveObjectIntoView({ ...nodeToWorkflowObject(node), forceMove: true });
   } else if (result.kind === "annotation") {
     const { wasAborted } = await selectionStore.tryClearSelection();
-    if (wasAborted) return;
+    if (wasAborted) { return; }
     selectionStore.selectAnnotations([result.annotation.id]);
-    canvasStore.value.moveObjectIntoView(
-      annotationToWorkflowObject(result.annotation),
-    );
+    await nextTick();
+    canvasStore.value.moveObjectIntoView({ ...annotationToWorkflowObject(result.annotation), forceMove: true });
   }
 };
 
 const scrollActiveIntoView = async () => {
   await nextTick();
-  const el = resultsRef.value?.children[activeIndex.value] as
-    | HTMLElement
-    | undefined;
-  el?.scrollIntoView({ block: "nearest" });
+  (resultsRef.value?.children[activeIndex.value] as HTMLElement | undefined)?.scrollIntoView({
+    block: "nearest",
+  });
 };
-
-// ─── Focus / close ────────────────────────────────────────────────────────────
 
 const close = () => {
   panelStore.isSearchPanelOpen = false;
@@ -237,30 +195,32 @@ watch(searchFocusTrigger, async () => {
   await focusInput();
 });
 
+/** Gap between .canvas-overlay-top-left bottom and the search panel — matches SidebarFloatingPanel */
+const PANEL_GAP = 4;
+const panelPos = ref({ left: 12, top: 60 });
+
 onMounted(async () => {
   await focusInput();
   window.addEventListener("keydown", onGlobalKeyDown);
+  const overlay = document.querySelector<HTMLElement>(".canvas-overlay-top-left");
+  if (overlay) {
+    const r = overlay.getBoundingClientRect();
+    panelPos.value = { left: r.left, top: r.bottom + PANEL_GAP };
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", onGlobalKeyDown);
 });
 
-// ─── Keyboard handling ────────────────────────────────────────────────────────
-
 const onGlobalKeyDown = (event: KeyboardEvent) => {
-  if (event.key === "Escape") {
-    close();
-  }
+  if (event.key === "Escape") { close(); }
 };
 
 const onKeyDown = (event: KeyboardEvent) => {
   if (event.key === "ArrowDown") {
     event.preventDefault();
-    activeIndex.value = Math.min(
-      activeIndex.value + 1,
-      filteredResults.value.length - 1,
-    );
+    activeIndex.value = Math.min(activeIndex.value + 1, filteredResults.value.length - 1);
     scrollActiveIntoView();
   } else if (event.key === "ArrowUp") {
     event.preventDefault();
@@ -272,8 +232,6 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
 };
 
-// ─── Result key ───────────────────────────────────────────────────────────────
-
 const resultKey = (result: SearchResult): string => {
   if (result.kind === "node") return `node-${result.node.id}`;
   if (result.kind === "annotation") return `ann-${result.annotation.id}`;
@@ -283,7 +241,6 @@ const resultKey = (result: SearchResult): string => {
 
 <template>
   <div class="search-panel" role="dialog" aria-label="Search workflow">
-    <!-- Header row -->
     <div class="search-header">
       <svg class="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
         <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
@@ -301,32 +258,19 @@ const resultKey = (result: SearchResult): string => {
       <button class="close-btn" aria-label="Close search" @click="close">✕</button>
     </div>
 
-    <!-- Results -->
-    <div
-      v-if="query.trim()"
-      ref="resultsRef"
-      class="search-results"
-      role="listbox"
-    >
-      <div v-if="filteredResults.length === 0" class="no-results">
-        No results found
-      </div>
+    <div v-if="query.trim()" ref="resultsRef" class="search-results" role="listbox">
+      <div v-if="filteredResults.length === 0" class="no-results">No results found</div>
 
       <button
         v-for="(result, index) in filteredResults"
         :key="resultKey(result)"
         class="result-item"
-        :class="{
-          active: index === activeIndex,
-          selected: isResultSelected(result),
-          'is-flowvar': result.kind === 'flowvar',
-        }"
+        :class="{ active: index === activeIndex, selected: isResultSelected(result) }"
         role="option"
         :aria-selected="index === activeIndex"
         @click="navigateTo(result)"
         @mouseenter="activeIndex = index"
       >
-        <!-- Category icon -->
         <span class="cat-badge" :class="{ 'fv-badge': result.kind === 'flowvar' }">
           <ComponentIcon
             v-if="result.kind === 'node' && result.node.kind === Node.KindEnum.Component"
@@ -336,19 +280,13 @@ const resultKey = (result: SearchResult): string => {
             v-else-if="result.kind === 'node' && result.node.kind === Node.KindEnum.Metanode"
             class="cat-icon"
           />
-          <AnnotationIcon
-            v-else-if="result.kind === 'annotation'"
-            class="cat-icon"
-          />
+          <AnnotationIcon v-else-if="result.kind === 'annotation'" class="cat-icon" />
           <NodeIcon v-else class="cat-icon" />
         </span>
 
-        <!-- Text -->
         <span class="result-text">
           <span class="result-label">{{ resultLabel(result) }}</span>
           <span v-if="resultSubLabel(result)" class="result-sublabel">{{ resultSubLabel(result) }}</span>
-
-          <!-- Monitor badges on nodes -->
           <template v-if="result.kind === 'node'">
             <span v-if="nodeMonitorState(result.node.id).error" class="issue-msg error-msg">
               {{ nodeMonitorState(result.node.id).error!.message }}
@@ -357,12 +295,8 @@ const resultKey = (result: SearchResult): string => {
               {{ nodeMonitorState(result.node.id).warning!.message }}
             </span>
           </template>
-
-          <!-- Flow var value placeholder -->
-          <span v-if="result.kind === 'flowvar'" class="fv-value">Value: —</span>
         </span>
 
-        <!-- Error / warning icon -->
         <span
           v-if="result.kind === 'node' && nodeMonitorState(result.node.id).error"
           class="issue-badge error-badge"
@@ -386,10 +320,11 @@ const resultKey = (result: SearchResult): string => {
 .search-panel {
   position: fixed;
   z-index: v-bind("$zIndices.layerFloatingWindows");
-  top: calc(var(--kds-spacing-container-0-75x) + 40px + 8px);
-  left: calc(var(--app-side-bar-buttons-width) + 8px);
-  width: min(360px, calc(100vw - var(--app-side-bar-buttons-width) - 16px));
-  max-height: calc(100dvh - 160px);
+  top: v-bind("panelPos.top + 'px'");
+  left: v-bind("panelPos.left + 'px'");
+  width: 360px;
+  height: 600px;
+  max-height: calc(100dvh - 80px);
   background-color: var(--kds-color-surface-default);
   border-radius: var(--kds-border-radius-container-0-50x);
   box-shadow: var(--kds-elevation-level-3);
@@ -397,8 +332,6 @@ const resultKey = (result: SearchResult): string => {
   display: flex;
   flex-direction: column;
 }
-
-/* ── Header ─────────────────────────────────────────────────────────────── */
 
 .search-header {
   display: flex;
@@ -445,8 +378,6 @@ const resultKey = (result: SearchResult): string => {
     background-color: var(--kds-color-background-neutral-hover);
   }
 }
-
-/* ── Results ─────────────────────────────────────────────────────────────── */
 
 .search-results {
   flex: 1;
@@ -532,12 +463,6 @@ const resultKey = (result: SearchResult): string => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.fv-value {
-  font-size: var(--kds-core-font-size-0-75x);
-  color: var(--kds-color-text-and-icon-neutral-faint);
-  font-style: italic;
 }
 
 .issue-msg {

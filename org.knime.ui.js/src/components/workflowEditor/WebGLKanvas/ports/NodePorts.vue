@@ -28,10 +28,12 @@ interface Props {
   outPorts: NodePortType[];
   portGroups?: NodePortGroups;
   portsVisible?: boolean;
+  cardWidth?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   portsVisible: true,
+  cardWidth: undefined,
 });
 
 const emit = defineEmits<{
@@ -69,6 +71,7 @@ const { portPositions, addPortPlaceholderPositions } = usePortPositions({
   outPorts: props.outPorts,
   emitPositionUpdate: (portPositions) =>
     emit("updatePortPositions", portPositions),
+  cardWidth: computed(() => props.cardWidth),
 });
 
 const isDefaultFlowVariable = (index: number) => {

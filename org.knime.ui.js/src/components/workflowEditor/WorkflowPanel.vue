@@ -30,7 +30,7 @@ const WebGLKanvas = defineAsyncComponent({
   loader: () => import("./WebGLKanvas/WorkflowCanvas.vue"),
 });
 
-const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
+const { useEmbeddedDialogs, nodeOutputLayout } = storeToRefs(useApplicationSettingsStore());
 const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu, quickActionMenu, contextMenu } = storeToRefs(
@@ -115,9 +115,10 @@ const panelStore = usePanelStore();
     <!-- Inline node view overlays — one per executed visualizer node (WebGL/card mode only) -->
     <NodeViewInlineOverlays v-if="currentRenderer !== 'SVG'" />
 
-    <!-- Floating node configuration / versions panel -->
+    <!-- Floating node configuration / versions panel (suppressed in "right" layout: config is docked in bottom panel) -->
     <NodeConfigFloatingPanel
       v-if="
+        nodeOutputLayout !== 'right' &&
         (useEmbeddedDialogs || versionsStore.isSidepanelOpen) &&
         panelStore.isRightPanelExpanded
       "

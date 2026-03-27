@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import { SubMenu } from "@knime/components";
+import { FunctionButton, Pill, SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import ShieldCloseIcon from "@knime/styles/img/icons/shield-close.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
@@ -11,6 +13,8 @@ import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayou
 import { useAIAssistantStore } from "@/store/ai/aiAssistant";
 import { useAISettingsStore } from "@/store/ai/aiSettings";
 import { usePanelStore } from "@/store/panel";
+import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import KaiExtensionPanel from "./KaiExtensionPanel.vue";
 import Chat from "./chat/Chat.vue";
@@ -47,6 +51,25 @@ const closeKai = () => {
 
 const { panelComponent } = useKaiPanels();
 const showChatControls = computed(() => !panelComponent.value);
+
+const { getSelectedNodes, getSelectedAnnotations } = storeToRefs(useSelectionStore());
+const nodeInteractionsStore = useNodeInteractionsStore();
+
+const stripHtml = (html: string) =>
+  html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+const CHIP_MAX = 24;
+const truncate = (s: string) => (s.length > CHIP_MAX ? `${s.slice(0, CHIP_MAX)}…` : s);
+
+const selectionChips = computed(() => [
+  ...getSelectedNodes.value.map((n) => ({
+    key: `node-${n.id}`,
+    label: truncate(nodeInteractionsStore.getNodeName(n.id)),
+  })),
+  ...getSelectedAnnotations.value.map((a) => ({
+    key: `ann-${a.id}`,
+    label: truncate(stripHtml(a.text.value)) || "Annotation",
+  })),
+]);
 </script>
 
 <template>
@@ -63,16 +86,27 @@ const showChatControls = computed(() => !panelComponent.value);
           <MenuIcon />
         </SubMenu>
       </template>
-      <button class="close-btn" type="button" @click="closeKai">
-        Close
-      </button>
+      <FunctionButton compact title="Close" @click="closeKai">
+        <CloseIcon />
+      </FunctionButton>
     </template>
 
     <div v-if="panelComponent" class="panel-container">
       <component :is="panelComponent" />
     </div>
     <template v-else>
-      <Chat chain-type="qa" />
+      <Chat chain-type="qa">
+        <template v-if="selectionChips.length" #before-controls>
+          <div class="selection-chips">
+            <Pill
+              v-for="chip in selectionChips"
+              :key="chip.key"
+              color="gray"
+              :title="chip.label"
+            >{{ chip.label }}</Pill>
+          </div>
+        </template>
+      </Chat>
       <KaiExtensionPanel />
     </template>
   </SidebarPanelLayout>
@@ -85,6 +119,14 @@ const showChatControls = computed(() => !panelComponent.value);
   margin-left: 5px;
 }
 
+.selection-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 12px 8px;
+  border-top: 1px solid var(--kds-color-border-default, var(--knime-silver-sand));
+}
+
 .panel-container {
   flex: 1;
   display: flex;
@@ -92,22 +134,4 @@ const showChatControls = computed(() => !panelComponent.value);
   overflow-y: auto;
 }
 
-.close-btn {
-  border: none;
-  background: transparent;
-  color: var(--kds-color-text-and-icon-neutral-faint);
-  cursor: pointer;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 12px;
-
-  &:hover {
-    color: var(--kds-color-text-and-icon-neutral);
-    background-color: var(--kds-color-background-neutral-hover);
-  }
-}
-
-.close-btn {
-  margin-left: 4px;
-}
 </style>

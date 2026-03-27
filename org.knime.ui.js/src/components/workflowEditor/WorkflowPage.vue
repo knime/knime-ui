@@ -18,6 +18,7 @@ import DeployPanel from "@/components/sidebar/DeployPanel.vue";
 import WorkflowSearchPanel from "@/components/workflowEditor/WorkflowSearchPanel.vue";
 import SidebarFloatingPanel from "@/components/sidebar/SidebarFloatingPanel.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
+import NodeOutputDockedConfigPanel from "@/components/uiExtensions/NodeOutputDockedConfigPanel.vue";
 import TooltipContainer from "@/components/workflowEditor/SVGKanvas/tooltip/TooltipContainer.vue";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { usePanelStore } from "@/store/panel";
@@ -36,6 +37,20 @@ const { nodeOutputLayout } = storeToRefs(useApplicationSettingsStore());
 const panelStore = usePanelStore();
 const { dockedRightPanelWidth, isKaiCompactOpen, isDeployPanelOpen, isSearchPanelOpen, kaiPlacement } =
   storeToRefs(panelStore);
+
+// KAI right overlay width matches the CSS formula: calc(var(--cfg-panel-right-width, 400px) - 40px)
+const KAI_RIGHT_PANEL_WIDTH = 360;
+
+const showKaiRightOverlay = computed(
+  () => kaiPlacement.value === "rightPanel" && isKaiCompactOpen.value,
+);
+
+// Effective right padding: takes the larger of the docked config panel width and the KAI right panel
+const effectiveRightPadding = computed(() =>
+  showKaiRightOverlay.value
+    ? Math.max(dockedRightPanelWidth.value, KAI_RIGHT_PANEL_WIDTH)
+    : dockedRightPanelWidth.value,
+);
 
 const splitPanelExpanded = ref(true);
 
@@ -57,7 +72,10 @@ const savedSecondarySize = computed({
 });
 
 const kaiBottomOffset = computed(() => {
-  if (nodeOutputLayout.value !== "bottom" || !splitPanelExpanded.value) {
+  if (
+    (nodeOutputLayout.value !== "bottom" && nodeOutputLayout.value !== "right") ||
+    !splitPanelExpanded.value
+  ) {
     return "0px";
   }
   return `${liveSecondarySize.value}dvh`;
@@ -65,10 +83,6 @@ const kaiBottomOffset = computed(() => {
 
 const showKaiBottomOverlay = computed(
   () => kaiPlacement.value === "centerStage",
-);
-
-const showKaiRightOverlay = computed(
-  () => kaiPlacement.value === "rightPanel" && isKaiCompactOpen.value,
 );
 </script>
 
@@ -82,7 +96,7 @@ const showKaiRightOverlay = computed(
 
     <main
       class="workflow-area"
-      :style="dockedRightPanelWidth ? { paddingRight: `${dockedRightPanelWidth}px` } : {}"
+      :style="effectiveRightPadding ? { paddingRight: `${effectiveRightPadding}px` } : {}"
     >
       <SplitPanel
         v-if="nodeOutputLayout === 'bottom'"
@@ -97,6 +111,21 @@ const showKaiRightOverlay = computed(
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />
+        </template>
+      </SplitPanel>
+      <SplitPanel
+        v-else-if="nodeOutputLayout === 'right'"
+        v-model:expanded="splitPanelExpanded"
+        v-model:secondary-size="savedSecondarySize"
+        class="split-panel"
+        splitter-id="node-output-right-split-panel"
+        direction="down"
+        :secondary-max-size="90"
+        :secondary-snap-size="15"
+      >
+        <WorkflowPanel id="workflow-panel" />
+        <template #secondary>
+          <NodeOutputDockedConfigPanel />
         </template>
       </SplitPanel>
       <WorkflowPanel v-else id="workflow-panel" />

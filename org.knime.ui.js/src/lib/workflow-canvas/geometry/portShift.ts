@@ -1,7 +1,13 @@
 /* eslint-disable no-magic-numbers */
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
-import { nodeCardHeight, nodeCardWidth, nodeSize, portSize } from "@/style/shapes";
+import {
+  compactNodeCardWidth,
+  nodeCardHeight,
+  nodeCardWidth,
+  nodeSize,
+  portSize,
+} from "@/style/shapes";
 
 /**
  * Calculates the position of the center of a port on a node depending on its index and the total number
@@ -21,8 +27,9 @@ export const portShift = (
   isMetanode?: boolean,
   isOutPort?: boolean,
   cardLayout?: boolean,
+  cardWidth?: number,
 ): [number, number] => {
-  const nodeW = isMetanode ? nodeSize : (cardLayout ? nodeCardWidth : nodeSize);
+  const nodeW = isMetanode ? nodeSize : (cardLayout ? (cardWidth ?? nodeCardWidth) : nodeSize);
   const nodeH = isMetanode ? nodeSize : (cardLayout ? nodeCardHeight : nodeSize);
   // For card layout: center ports at the card edge so connectors meet the card without a gap.
   // For classic layout: extend half a portSize outside the node.
@@ -75,17 +82,19 @@ export const placeholderPosition = ({
   isOutport = false,
   isMetanode = false,
   cardLayout = false,
+  cardWidth,
 }: {
   portCount: number;
   isOutport?: boolean;
   isMetanode?: boolean;
   cardLayout?: boolean;
+  cardWidth?: number;
 }) => {
   const castedIsMetanode = Number(isMetanode); // cast to 1 or 0
 
   switch (portCount) {
     case 1 - castedIsMetanode:
-      return portShift(portCount, portCount + 1, isMetanode, isOutport, cardLayout);
+      return portShift(portCount, portCount + 1, isMetanode, isOutport, cardLayout, cardWidth);
     default:
       return portShift(
         Math.max(4 - castedIsMetanode, portCount),
@@ -93,6 +102,7 @@ export const placeholderPosition = ({
         isMetanode,
         isOutport,
         cardLayout,
+        cardWidth,
       );
   }
 };
@@ -102,14 +112,16 @@ export const positions = ({
   isMetanode = false,
   isOutports = false,
   cardLayout = false,
+  cardWidth,
 }: {
   portCount: number;
   isMetanode?: boolean;
   isOutports?: boolean;
   cardLayout?: boolean;
+  cardWidth?: number;
 }) =>
   [...Array(portCount).keys()].map((index) =>
-    portShift(index, portCount, isMetanode, isOutports, cardLayout),
+    portShift(index, portCount, isMetanode, isOutports, cardLayout, cardWidth),
   );
 
 export const getPortPositionInNode = (
@@ -120,12 +132,26 @@ export const getPortPositionInNode = (
   anchorToNodeEdge = false,
 ): XY => {
   const allPorts = type === "source" ? node.outPorts : node.inPorts;
+  const isMetanode = node.kind === "metanode";
+
+  // For card-layout compact nodes, compute the variable card width from the node name.
+  // Executed view nodes use the full nodeCardWidth (their inline view fills the card).
+  let cardWidth: number | undefined;
+  if (cardLayout && !isMetanode) {
+    const isExecutedViewNode =
+      node.hasView && node.state?.executionState === "EXECUTED";
+    if (!isExecutedViewNode) {
+      cardWidth = compactNodeCardWidth((node.name ?? "").length);
+    }
+  }
+
   const [dx, dy] = portShift(
     sourceNodeIndex,
     allPorts.length,
-    node.kind === "metanode",
+    isMetanode,
     type === "source",
     cardLayout,
+    cardWidth,
   );
   const { x, y } = node.position;
 

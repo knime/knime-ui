@@ -53,7 +53,7 @@ type ApplicationSettingsState = {
    * - "side-by-side" : node output occupies the left 2/3 of the config panel
    * - "bottom"       : node output shown in a separate resizable panel below the config panel
    */
-  nodeOutputLayout: "bottom" | "side-by-side";
+  nodeOutputLayout: "bottom" | "side-by-side" | "right";
   /*
    * Whether the advanced options section in node configuration dialogs is expanded
    */
@@ -77,6 +77,11 @@ type ApplicationSettingsState = {
    */
   isKaiEnabled: boolean;
   activeCanvasRenderer: CanvasRendererType;
+  /*
+   * When false, all view nodes render as compact pills regardless of execution state.
+   * Inline view overlays are also hidden.
+   */
+  inlineViewsEnabled: boolean;
 };
 
 export const useApplicationSettingsStore = defineStore("applicationSettings", {
@@ -90,6 +95,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
     showDevToolsBar: true,
     nodeConfigOpenMode: "current",
     nodeOutputLayout: "side-by-side",
+    inlineViewsEnabled: true,
     showDialogAdvancedOptions: false,
     jumpMarksMode: "scrolling",
     isSubnodeLockingEnabled: false,
@@ -131,7 +137,7 @@ export const useApplicationSettingsStore = defineStore("applicationSettings", {
       useSettingsStore().updateSetting({ key: "nodeConfigOpenMode", value: mode });
     },
 
-    setNodeOutputLayout(layout: "bottom" | "side-by-side") {
+    setNodeOutputLayout(layout: "bottom" | "side-by-side" | "right") {
       this.nodeOutputLayout = layout;
       useSettingsStore().updateSetting({ key: "nodeOutputLayout", value: layout });
     },

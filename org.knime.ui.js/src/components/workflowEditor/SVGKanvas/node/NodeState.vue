@@ -108,23 +108,13 @@ const tooltip = computed<TooltipDefinition | null>(() => {
   return null;
 });
 
-const fillColor = (active: boolean, index: number) => {
-  const activeColor = (["red", "yellow", "green"] as const)[index];
-
-  return active
-    ? $colors.trafficLight[activeColor]
-    : $colors.trafficLight.inactive;
-};
-
-const strokeColor = (active: boolean, index: number) => {
-  const activeColor = (["redBorder", "yellowBorder", "greenBorder"] as const)[
-    index
-  ];
-
-  return active
-    ? $colors.trafficLight[activeColor]
-    : $colors.trafficLight.inactiveBorder;
-};
+const DOT_CX = [6, 16, 26] as const;
+const DOT_FILL = (["red", "yellow", "green"] as const).map(
+  (k) => $colors.trafficLight[k],
+);
+const DOT_STROKE = (["redBorder", "yellowBorder", "greenBorder"] as const).map(
+  (k) => $colors.trafficLight[k],
+);
 
 useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
 </script>
@@ -134,27 +124,21 @@ useTooltip({ tooltip, element: useTemplateRef<SVGGElement>("tooltipRef") });
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"
-      :fill="$colors.trafficLight.background"
-      :stroke="$colors.darkeningMask"
-      stroke-width=".3"
-      rx="1"
+      fill="#e6e6e6"
+      rx="2"
     />
 
-    <!-- node's static states -->
+    <!-- node's static states: only the single active dot -->
     <g v-if="trafficLight">
       <template v-for="(active, index) of trafficLight" :key="index">
         <circle
-          :cx="6 + 10 * index"
+          v-if="active"
+          :cx="DOT_CX[index]"
           cy="6"
           r="4"
-          :fill="fillColor(active, index)"
-        />
-        <circle
-          :cx="6 + 10 * index"
-          cy="6"
-          r="3.5"
-          fill="none"
-          :stroke="strokeColor(active, index)"
+          :fill="DOT_FILL[index]"
+          :stroke="DOT_STROKE[index]"
+          stroke-width="1"
         />
       </template>
     </g>

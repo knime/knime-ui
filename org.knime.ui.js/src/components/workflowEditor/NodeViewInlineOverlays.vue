@@ -4,16 +4,18 @@ import { storeToRefs } from "pinia";
 
 import type { ComponentNode, NativeNode } from "@/api/gateway-api/generated-api";
 import { workflowDomain } from "@/lib/workflow-domain";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import ComponentViewInlineOverlay from "./ComponentViewInlineOverlay.vue";
 import NodeViewInlineOverlay from "./NodeViewInlineOverlay.vue";
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const { inlineViewsEnabled } = storeToRefs(useApplicationSettingsStore());
 
 /** Native nodes that are executed and have a view — rendered as inline overlays */
 const viewNodes = computed((): NativeNode[] => {
-  if (!activeWorkflow.value) return [];
+  if (!activeWorkflow.value || !inlineViewsEnabled.value) return [];
   return Object.values(activeWorkflow.value.nodes).filter(
     (node): node is NativeNode =>
       workflowDomain.node.isNative(node) &&
@@ -24,7 +26,7 @@ const viewNodes = computed((): NativeNode[] => {
 
 /** Component nodes that are executed and have a view — rendered as inline overlays */
 const viewComponents = computed((): ComponentNode[] => {
-  if (!activeWorkflow.value) return [];
+  if (!activeWorkflow.value || !inlineViewsEnabled.value) return [];
   return Object.values(activeWorkflow.value.nodes).filter(
     (node): node is ComponentNode =>
       workflowDomain.node.isComponent(node) &&

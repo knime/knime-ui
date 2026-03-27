@@ -20,6 +20,8 @@ type Props = {
   icon?: string | null;
   hasView?: boolean;
   isExecuting?: boolean;
+  customWidth?: number;
+  customHeight?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,13 +29,17 @@ const props = withDefaults(defineProps<Props>(), {
   icon: null,
   hasView: false,
   isExecuting: false,
+  customWidth: undefined,
+  customHeight: undefined,
 });
 
 const { zoomAwareResolution } = storeToRefs(useWebGLCanvasStore());
 
-const W = $shapes.nodeCardWidth;
-const H = computed(() =>
-  props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight,
+const W = computed(() => props.customWidth ?? $shapes.nodeCardWidth);
+const H = computed(
+  () =>
+    props.customHeight ??
+    (props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight),
 );
 const headerHeight = computed(() =>
   props.hasView ? $shapes.compactNodeCardHeight : H.value,
@@ -55,18 +61,23 @@ const displayLabel = computed(() => {
   return "Node";
 });
 
-// Icon at x=6, 8px wide. Gap: 4px. Name starts at x=18. Right pad: 6px.
-const ICON_SIZE = 8;
-const NAME_X = 18;
-const maxNameChars = Math.floor((W - NAME_X - 6) / 5.5);
+// Icon chip (compact nodes): colored background chip behind the icon
+const ICON_SIZE = 12;
+const CHIP_SIZE = ICON_SIZE; // chip matches icon exactly — no extra padding
+const CHIP_X = 4; // card left padding
+
+// Icon at x=4 (CHIP_X), 12px wide. Gap to name: 4px. Name starts at x=20. Right pad: 6px.
+const NAME_X = 20;
+const maxNameChars = computed(() => Math.floor((W.value - NAME_X - 6) / (props.hasView ? 5.5 : 4.5)));
 const truncatedLabel = computed(() => {
   const label = displayLabel.value;
-  return label.length > maxNameChars
-    ? `${label.slice(0, maxNameChars - 1)}…`
+  return label.length > maxNameChars.value
+    ? `${label.slice(0, maxNameChars.value - 1)}…`
     : label;
 });
 
 // Keep the icon and name in the top header row when the node has an inline view.
+const chipY = computed(() => Math.round((headerHeight.value - CHIP_SIZE) / 2));
 const iconY = computed(() => Math.round((headerHeight.value - ICON_SIZE) / 2));
 const textY = computed(() => Math.round(headerHeight.value / 2));
 
@@ -102,23 +113,31 @@ onUnmounted(() => {
   iconTexture.value?.destroy();
 });
 
-const cardNameStyle = {
+const cardNameStyle = computed(() => ({
   fontFamily: "Roboto Condensed",
-  fontSize: 11,
+  fontSize: props.hasView ? 11 : 9,
   fontWeight: "bold",
-  fill: "#333333",
-};
+  fill: props.hasView ? "#333333" : "#000000",
+}));
 
 const renderCard = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.roundRect(0, 0, W, H.value, 6);
+  graphics.roundRect(0, 0, W.value, H.value, props.hasView ? 6 : 4);
   graphics.fill("white");
-  graphics.stroke({ width: 1.5, color: categoryColor.value });
+  graphics.stroke({ width: props.hasView ? 1.5 : 1, color: categoryColor.value });
 };
 
+// For compact nodes: category-colored chip behind the icon
+const renderIconChip = (graphics: GraphicsInst) => {
+  graphics.clear();
+  graphics.roundRect(CHIP_X, chipY.value, CHIP_SIZE, CHIP_SIZE, 4);
+  graphics.fill(categoryColor.value);
+};
+
+// Fallback for view nodes when icon hasn't loaded
 const renderIconFallback = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.roundRect(6, iconY.value, ICON_SIZE, ICON_SIZE, 1);
+  graphics.roundRect(CHIP_X, iconY.value, ICON_SIZE, ICON_SIZE, 4);
   graphics.fill(categoryColor.value);
 };
 </script>
@@ -132,19 +151,28 @@ const renderIconFallback = (graphics: GraphicsInst) => {
       @render="renderCard"
     />
 
-    <!-- Node icon (8×8) or category color square fallback -->
+    <!-- Compact nodes: colored chip behind the icon -->
+    <Graphics
+      v-if="!hasView"
+      label="NodeTorsoCardIconChip"
+      event-mode="none"
+      @render="renderIconChip"
+    />
+
+    <!-- Node icon (8×8) — on top of chip for compact, bare for view nodes -->
     <Sprite
       v-if="iconTexture"
       label="NodeTorsoCardIcon"
       event-mode="none"
       :texture="(iconTexture as any)"
       :anchor="0"
-      :x="6"
+      :x="CHIP_X"
       :y="iconY"
       :scale="iconScale"
     />
+    <!-- Fallback for view nodes only (compact nodes already show the chip) -->
     <Graphics
-      v-else
+      v-else-if="hasView"
       label="NodeTorsoCardIconFallback"
       event-mode="none"
       @render="renderIconFallback"

@@ -109,6 +109,8 @@ watch(
       </div>
     </SidebarPanelScrollContainer>
 
+    <slot name="before-controls" />
+
     <ChatControls
       :is-processing="isProcessing"
       :last-user-message="lastUserMessage"

@@ -7,6 +7,8 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/lib/geometry";
 import { DashLine } from "@/lib/pixi-dash-line";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useNodeCustomSizesStore } from "@/store/nodeCustomSizes";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import * as $colors from "@/style/colors";
@@ -25,12 +27,16 @@ type Props = {
   position: XY;
   name: string;
   isMetanode?: boolean;
+  isComponent?: boolean;
   hasView?: boolean;
+  isExecuted?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   isMetanode: false,
+  isComponent: false,
   hasView: false,
+  isExecuted: false,
 });
 
 const canvasStore = useWebGLCanvasStore();
@@ -43,6 +49,12 @@ const selectionStore = useSelectionStore();
 const { shouldHideSelection } = storeToRefs(selectionStore);
 const { showSelection, showFocus } =
   selectionStore.getNodeVisualSelectionStates(props.nodeId);
+
+const customSizesStore = useNodeCustomSizesStore();
+const { inlineViewsEnabled } = storeToRefs(useApplicationSettingsStore());
+const effectiveIsExecuted = computed(
+  () => props.isExecuted && inlineViewsEnabled.value,
+);
 
 const { metrics: nodeNameDimensions } = useNodeNameShortening(
   toRef(props, "name"),
@@ -58,14 +70,24 @@ const { nodeSelectionMeasures: measures } = useNodeSelectionPlaneMeasures({
   extraHeight: () =>
     isEditingName.value
       ? nameEditorDimensions.value.height
-      : nodeNameDimensions.value.height,
+      : props.isMetanode || props.isComponent
+        ? nodeNameDimensions.value.height
+        : 0,
   isMetanode: props.isMetanode,
   width: () =>
     isEditingName.value
       ? nameEditorDimensions.value.width
       : $shapes.nodeNameHorizontalMargin * 2,
-  cardHeight: () =>
-    props.hasView ? $shapes.nodeCardHeight : $shapes.compactNodeCardHeight,
+  cardHeight: () => {
+    if (!props.hasView || !effectiveIsExecuted.value) return $shapes.compactNodeCardHeight;
+    return customSizesStore.getSize(props.nodeId)?.height ?? $shapes.nodeCardHeight;
+  },
+  cardWidth: () => {
+    if (props.hasView && effectiveIsExecuted.value) {
+      return customSizesStore.getSize(props.nodeId)?.width ?? $shapes.nodeCardWidth;
+    }
+    return $shapes.compactNodeCardWidth(props.name.length);
+  },
 });
 
 const selectionPlaneRenderFn = (graphics: GraphicsInst) => {

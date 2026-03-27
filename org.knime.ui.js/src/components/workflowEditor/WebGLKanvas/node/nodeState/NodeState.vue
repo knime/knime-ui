@@ -5,7 +5,11 @@ import { Rectangle } from "pixi.js";
 
 import { animFrame } from "../../util/animFrame";
 
-import { NodeState } from "@/api/gateway-api/generated-api";
+import {
+  NativeNodeInvariants,
+  Node,
+  NodeState,
+} from "@/api/gateway-api/generated-api";
 import { useTooltip } from "@/components/workflowEditor/WebGLKanvas/tooltip/useTooltip";
 import type { TooltipDefinition } from "@/components/workflowEditor/types";
 import * as $colors from "@/style/colors";
@@ -15,6 +19,11 @@ import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
 type Props = NodeState & {
   loopStatus?: string;
   textResolution?: number;
+  /** Used to derive the category border color matching the card border */
+  type?: NativeNodeInvariants.TypeEnum | null;
+  kind?: Node.KindEnum;
+  /** Card width used to center the traffic light; defaults to nodeCardWidth */
+  cardWidth?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,6 +36,21 @@ const props = withDefaults(defineProps<Props>(), {
   resolutions: () => [],
   loopStatus: undefined,
   textResolution: undefined,
+  type: undefined,
+  kind: undefined,
+  cardWidth: undefined,
+});
+
+const categoryColor = computed(() => {
+  if (props.type && Reflect.has($colors.nodeBackgroundColors, props.type)) {
+    return $colors.nodeBackgroundColors[
+      props.type as keyof typeof $colors.nodeBackgroundColors
+    ];
+  }
+  if (props.kind === Node.KindEnum.Component) {
+    return $colors.nodeBackgroundColors.Component;
+  }
+  return "#aaa";
 });
 
 const isExecuting = computed(
@@ -53,10 +77,14 @@ const trafficLight = computed<[boolean, boolean, boolean] | undefined>(() => {
   }
 });
 
+const stateX = computed(
+  () => (props.cardWidth ?? $shapes.nodeCardWidth) / 2,
+);
+
 const tooltip = computed<TooltipDefinition | null>(() => {
   let tooltip = {
     position: {
-      x: $shapes.nodeCardWidth / 2,
+      x: stateX.value,
       y: 0,
     },
     gap: 1,
@@ -86,24 +114,33 @@ const { showTooltip, hideTooltip } = useTooltip({
 });
 
 // Hit area centered at (0,0) — covers the traffic light pill
-const hitArea = new Rectangle(-12, -5, 24, 10);
+const hitArea = new Rectangle(-13, -6, 26, 12);
 
 // Traffic light pill dimensions
-const PILL_W = 18;
-const PILL_H = 6;
-const PILL_RADIUS = 3;
+const PILL_W = 20;
+const PILL_H = 8;
+const PILL_RADIUS = 4;
 // 3 dot positions relative to pill center
 const DOT_X = [-6, 0, 6] as const;
 const DOT_RADIUS = 2;
-const ACTIVE_FILL = ["#C81D31", "#FFDD5A", "#71BD5B"] as const;
-const ACTIVE_STROKE = ["#670317", "#9F4B24", "#276023"] as const;
+const ACTIVE_FILL = [
+  $colors.trafficLight.red,
+  $colors.trafficLight.yellow,
+  $colors.trafficLight.green,
+] as const;
+const ACTIVE_STROKE = [
+  $colors.trafficLight.redBorder,
+  $colors.trafficLight.yellowBorder,
+  $colors.trafficLight.greenBorder,
+] as const;
 
 // Expose for tests
 defineExpose({ trafficLight });
 
 const renderTrafficLight = (graphics: GraphicsInst) => {
-  // Subscribe to animFrame only while executing
-  const _frame = isExecuting.value ? animFrame.value : 0;
+  // Always subscribe to animFrame so any state change triggers a redraw.
+  // The executing animation also needs per-frame alpha updates.
+  const _frame = animFrame.value;
   graphics.clear();
 
   if (trafficLight.value === undefined) {
@@ -114,9 +151,10 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
     return;
   }
 
-  // Background pill
+  // Background pill — white fill with category-color border matching the card
   graphics.roundRect(-PILL_W / 2, -PILL_H / 2, PILL_W, PILL_H, PILL_RADIUS);
-  graphics.fill($colors.trafficLight.background);
+  graphics.fill("white");
+  graphics.stroke({ width: 1, color: categoryColor.value });
 
   // Draw only the single active dot (idle=left, configured=center, executed=right)
   const activeIdx = trafficLight.value.indexOf(true);
@@ -134,7 +172,7 @@ const renderTrafficLight = (graphics: GraphicsInst) => {
     label="NodeState"
     :hit-area="hitArea"
     event-mode="static"
-    :x="$shapes.nodeCardWidth / 2"
+    :x="stateX"
     :y="0"
     @pointerenter="showTooltip"
     @pointerleave="hideTooltip"

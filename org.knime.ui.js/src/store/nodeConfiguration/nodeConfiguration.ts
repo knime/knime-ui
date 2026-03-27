@@ -78,6 +78,11 @@ export interface NodeConfigurationState {
   isLargeMode: boolean;
   activeNodeViewNeedsExecution: boolean;
   showNodeDescriptionPanel: boolean;
+  /**
+   * When set, overrides the single-selection-based activeContext to show
+   * the config for this specific node. Used in split view (two nodes selected).
+   */
+  configFocusNodeId: string | null;
 }
 
 type ActiveContext =
@@ -97,8 +102,13 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
     isLargeMode: false,
     activeNodeViewNeedsExecution: false,
     showNodeDescriptionPanel: false,
+    configFocusNodeId: null,
   }),
   actions: {
+    setConfigFocusNodeId(nodeId: string | null) {
+      this.configFocusNodeId = nodeId;
+    },
+
     setIsLargeMode(value: boolean) {
       this.isLargeMode = value;
 
@@ -263,10 +273,13 @@ export const useNodeConfigurationStore = defineStore("nodeConfiguration", {
       );
     },
 
-    activeContext: (_): ActiveContext => {
+    activeContext: (state): ActiveContext => {
       const { querySelection } = useSelectionStore();
       const { singleSelectedNode } = querySelection("committed");
-      const activeNodeId = singleSelectedNode.value?.id;
+
+      // configFocusNodeId overrides the single-selection when a split-view
+      // config tab has been explicitly chosen (two nodes selected).
+      const activeNodeId = state.configFocusNodeId ?? singleSelectedNode.value?.id;
 
       if (!activeNodeId) {
         return null;

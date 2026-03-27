@@ -17,6 +17,7 @@ type UsePortPositionsOptions = {
   outPorts: KnimeNode["outPorts"];
   canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
   emitPositionUpdate: (positions: PortPositions) => void;
+  cardWidth?: ComputedRef<number | undefined>;
 };
 
 export const usePortPositions = (options: UsePortPositionsOptions) => {
@@ -28,17 +29,20 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
    */
   const portPositions = computed<PortPositions>(() => {
     const cardLayout = canvasRendererUtils.isWebGLRenderer();
+    const cardWidth = options.cardWidth?.value;
     const positions = {
       in: ports.positions({
         portCount: options.inPorts.length,
         isMetanode: isMetanode.value,
         cardLayout,
+        cardWidth,
       }),
       out: ports.positions({
         portCount: options.outPorts.length,
         isMetanode: isMetanode.value,
         isOutports: true,
         cardLayout,
+        cardWidth,
       }),
     };
 
@@ -49,6 +53,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
           portCount: options.inPorts.length,
           isMetanode: isMetanode.value,
           cardLayout,
+          cardWidth,
         }),
       );
     }
@@ -60,6 +65,7 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
           isMetanode: isMetanode.value,
           isOutport: true,
           cardLayout,
+          cardWidth,
         }),
       );
     }

@@ -25,7 +25,6 @@ import type { JumpMark } from "./useDialogJumpMarks";
 // ─── State ───────────────────────────────────────────────────────────────────
 
 const panelStore = usePanelStore();
-const { isKaiCompactOpen, kaiPlacement } = storeToRefs(panelStore);
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 const currentCanvasStore = useCurrentCanvasStore();
 const applicationSettingsStore = useApplicationSettingsStore();
@@ -183,8 +182,7 @@ watch(singleSelectedNode, (node) => {
   if (
     !node &&
     !versionsStore.isSidepanelOpen &&
-    nodeConfigOpenMode.value !== "dock" &&
-    !(kaiPlacement.value === "rightPanel" && isKaiCompactOpen.value)
+    nodeConfigOpenMode.value !== "dock"
   ) {
     panelStore.isRightPanelExpanded = false;
   }
@@ -258,14 +256,14 @@ const floatingJumpMarksStyles = computed(() => {
   const base = { position: "fixed" as const, width: `${JUMP_MARKS_WIDTH}px` };
 
   if (dockedSide.value === "left") {
-    return { ...base, left: `${rectState.value.width + JUMP_MARKS_GAP}px`, top: "0px", maxHeight: "100dvh" };
+    return { ...base, left: `${rectState.value.width + JUMP_MARKS_GAP}px`, top: "var(--app-header-height)", maxHeight: "calc(100dvh - var(--app-header-height))" };
   }
   if (dockedSide.value === "right") {
     return {
       ...base,
       left: `calc(100vw - ${rectState.value.width + JUMP_MARKS_WIDTH + JUMP_MARKS_GAP}px)`,
-      top: "0px",
-      maxHeight: "100dvh",
+      top: "var(--app-header-height)",
+      maxHeight: "calc(100dvh - var(--app-header-height))",
     };
   }
   // Floating: right edge flush against the dialog's left edge.
@@ -313,17 +311,17 @@ const panelStyles = computed(() => {
   if (dockedSide.value === "left") {
     return {
       left: "0px",
-      top: "0px",
+      top: "var(--app-header-height)",
       width: `${rectState.value.width}px`,
-      height: "100dvh",
+      height: "calc(100dvh - var(--app-header-height))",
     };
   }
   if (dockedSide.value === "right") {
     return {
       left: `calc(100vw - ${rectState.value.width}px)`,
-      top: "0px",
+      top: "var(--app-header-height)",
       width: `${rectState.value.width}px`,
-      height: "100dvh",
+      height: "calc(100dvh - var(--app-header-height))",
     };
   }
   return {
@@ -530,8 +528,8 @@ const onDescHeaderMouseDown = (event: MouseEvent) => {
 /* ── Dock-zone preview overlay (shown while dragging near a screen edge) ───── */
 .dock-preview {
   position: fixed;
-  top: 0;
-  height: 100dvh;
+  top: var(--app-header-height);
+  height: calc(100dvh - var(--app-header-height));
   pointer-events: none;
   z-index: v-bind("$zIndices.layerFloatingWindows");
   background-color: var(--kds-color-surface-default);
