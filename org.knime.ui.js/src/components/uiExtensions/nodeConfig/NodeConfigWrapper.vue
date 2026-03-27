@@ -174,6 +174,17 @@ watch(isUIExtensionReady, async (ready) => {
   }
 });
 
+// Auto-activate first tab when sections are discovered and mode is tab-based
+watch(jumpMarkSections, (sections) => {
+  if (
+    sections.length > 0 &&
+    jumpMarksActiveSection.value === null &&
+    (jumpMarksMode.value === "tabs" || jumpMarksMode.value === "horizontal-tabs")
+  ) {
+    activateSection(0, jumpMarksMode.value);
+  }
+});
+
 const tryExitLargeMode = () => {
   if (isLargeMode.value) {
     nodeConfigurationStore.setIsLargeMode(false);

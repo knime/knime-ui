@@ -172,6 +172,8 @@ export function useDialogJumpMarks() {
       s.sectionBlocks.forEach((el) => {
         el.style.display = "";
       });
+      // Restore the h3 heading that may have been hidden in tab mode
+      s.element.style.display = "";
     });
   };
 
@@ -192,6 +194,8 @@ export function useDialogJumpMarks() {
         s.sectionBlocks.forEach((el) => {
           el.style.display = i === index ? "" : "none";
         });
+        // Hide the h3 heading inside tabs — the tab bar already shows it
+        s.element.style.display = "none";
       });
       // Snap to top of the (now-only) visible content
       const container = findScrollableAncestor(mark.element);
