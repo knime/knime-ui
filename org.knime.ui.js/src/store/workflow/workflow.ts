@@ -125,13 +125,10 @@ export const useWorkflowStore = defineStore("workflow", {
 
       const deleteableBendpoints = Object.keys(connectionBendpoints).reduce(
         (acc, connectionId) => {
-          const connection = this.activeWorkflow!.connections[connectionId];
-          return connection.allowedActions?.canDelete
-            ? {
-                ...acc,
-                [connectionId]: connectionBendpoints[connectionId],
-              }
-            : acc;
+          return {
+            ...acc,
+            [connectionId]: connectionBendpoints[connectionId],
+          };
         },
         {},
       );
